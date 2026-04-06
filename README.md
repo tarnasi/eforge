@@ -1,7 +1,7 @@
 <p align="center">
-  <img src="https://img.shields.io/pypi/v/environment-forge?color=blue&style=for-the-badge" alt="PyPI version">
-  <img src="https://img.shields.io/pypi/pyversions/environment-forge?style=for-the-badge" alt="Python versions">
-  <img src="https://img.shields.io/github/license/shahriyartarnasi/environment-forge?style=for-the-badge" alt="License">
+  <img src="https://img.shields.io/badge/python-≥3.12-blue?style=for-the-badge&logo=python&logoColor=white" alt="Python versions">
+  <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="License">
+  <img src="https://img.shields.io/badge/version-0.1.0-blue?style=for-the-badge" alt="Version">
 </p>
 
 <h1 align="center">🔐 Environment Forge</h1>
