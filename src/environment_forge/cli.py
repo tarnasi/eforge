@@ -20,6 +20,7 @@ Commands::
     eforge schema remove KEY              # remove a declaration
     eforge schema show                    # show the full schema
     eforge validate                       # check vault against schema
+    eforge docker-init [--path /eforge]   # init vault for Docker volume
     eforge destroy [-f]                   # delete vault from disk
 """
 
@@ -506,6 +507,99 @@ def cmd_destroy(args):
     console.print("[green]Vault destroyed.[/green]")
 
 
+# ── Docker commands ──────────────────────────────────────────────────────
+
+
+def cmd_docker_init(args):
+    """Initialise a vault at the Docker volume path (/eforge)."""
+    target = Path(args.path or Vault.DOCKER_VOLUME_DIR)
+
+    if not target.exists():
+        try:
+            target.mkdir(parents=True, exist_ok=True)
+        except PermissionError:
+            err_console.print(f"[red]Permission denied: {target}[/red]")
+            err_console.print("[dim]Make sure the Docker volume is mounted and writable.[/dim]")
+            sys.exit(1)
+
+    vault = Vault(path=target)
+
+    if vault.is_initialized and not args.force:
+        console.print(f"[yellow]Vault already exists at {target}[/yellow]")
+        console.print("[dim]Use --force to reinitialise.[/dim]")
+        return
+
+    # If importing from local .eforge
+    local_eforge = Path.cwd() / Vault.DEFAULT_DIR
+    if args.copy_from:
+        source = Path(args.copy_from)
+    elif local_eforge.is_dir() and (local_eforge / Vault.VAULT_FILE).is_file():
+        source = local_eforge
+    else:
+        source = None
+
+    if source and source.is_dir():
+        # Copy vault.enc and schema.json from source, use same or new secret
+        src_vault_file = source / Vault.VAULT_FILE
+        src_schema_file = source / Vault.SCHEMA_FILE
+        src_key_file = source / Vault.KEY_FILE
+
+        if src_vault_file.is_file():
+            import shutil
+            target.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src_vault_file, target / Vault.VAULT_FILE)
+            (target / Vault.VAULT_FILE).chmod(0o600)
+
+        if src_schema_file.is_file():
+            import shutil
+            shutil.copy2(src_schema_file, target / Vault.SCHEMA_FILE)
+
+        if src_key_file.is_file():
+            import shutil
+            shutil.copy2(src_key_file, target / Vault.KEY_FILE)
+            (target / Vault.KEY_FILE).chmod(0o600)
+
+        if _RICH:
+            console.print(Panel.fit(
+                f"[bold green]✔ Docker vault initialised[/bold green]\n\n"
+                f"  [dim]Source:[/dim]  {source}\n"
+                f"  [dim]Target:[/dim]  {target}\n"
+                f"  [dim]Files:[/dim]   vault.enc, secret.key"
+                + (", schema.json" if src_schema_file.is_file() else ""),
+                title="[bold]Environment Forge — Docker[/bold]",
+                border_style="green",
+            ))
+        else:
+            console.print(f"✔ Docker vault initialised\n  Source: {source}\n  Target: {target}")
+    else:
+        # Fresh init at target path
+        vault.set("__init__", "true")
+        vault.delete("__init__")
+
+        if _RICH:
+            console.print(Panel.fit(
+                f"[bold green]✔ Docker vault initialised[/bold green]\n\n"
+                f"  [dim]Vault:[/dim]  {vault.vault_path}\n"
+                f"  [dim]Key:[/dim]    {vault._key_path}",
+                title="[bold]Environment Forge — Docker[/bold]",
+                border_style="green",
+            ))
+        else:
+            console.print(f"✔ Docker vault initialised\n  Vault: {vault.vault_path}\n  Key:   {vault._key_path}")
+
+    console.print("")
+    console.print("[dim]Docker Compose example:[/dim]")
+    console.print("  volumes:")
+    console.print(f"    - eforge_data:{target}")
+    console.print("  environment:")
+    console.print("    - EFORGE_VAULT_PATH=" + str(target))
+    console.print("")
+    console.print("[dim]Your app loads it automatically:[/dim]")
+    console.print("  import environment_forge")
+    console.print("  environment_forge.load()")
+    console.print("")
+
+
 # ── Main ─────────────────────────────────────────────────────────────────
 
 
@@ -590,6 +684,12 @@ def main():
     p_destroy = sub.add_parser("destroy", help="Delete vault and secret key", parents=[parent])
     p_destroy.add_argument("-f", "--force", action="store_true", help="Skip confirmation")
 
+    # docker-init
+    p_docker = sub.add_parser("docker-init", help="Initialise vault for Docker volume", parents=[parent])
+    p_docker.add_argument("--path", default=None, help=f"Target path (default: {Vault.DOCKER_VOLUME_DIR})")
+    p_docker.add_argument("--copy-from", default=None, help="Copy vault from this directory (default: auto-detect .eforge)")
+    p_docker.add_argument("-f", "--force", action="store_true", help="Overwrite existing vault")
+
     args = parser.parse_args()
 
     commands = {
@@ -606,6 +706,7 @@ def main():
         "schema": cmd_schema,
         "validate": cmd_validate,
         "destroy": cmd_destroy,
+        "docker-init": cmd_docker_init,
     }
 
     if args.command in commands:

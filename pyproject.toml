@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "environment-forge"
-version = "0.0.2"
+version = "0.0.3"
 description = "Encrypted environment variable manager — set, read, and validate secrets with Fernet encryption."
 readme = "README.md"
 license = {text = "MIT"}

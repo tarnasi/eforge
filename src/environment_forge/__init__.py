@@ -16,7 +16,7 @@ In your Python project::
     environment_forge.load()           # injects vault into os.environ
 """
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 
 from environment_forge.vault import Vault
 from environment_forge.schema import EnvSchema, EnvVar, ValidationResult

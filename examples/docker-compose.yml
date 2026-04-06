@@ -1,0 +1,24 @@
+# Example Docker Compose for using Environment Forge with named volumes.
+#
+# Usage:
+#   1. Build your vault locally:
+#      eforge init && eforge import .env
+#
+#   2. Copy to Docker volume:
+#      eforge docker-init
+#
+#   3. Start:
+#      docker compose up
+
+services:
+  app:
+    build: .
+    volumes:
+      - eforge_data:/eforge           # encrypted vault on named volume
+    environment:
+      - EFORGE_VAULT_PATH=/eforge     # auto-detected, but explicit is clearer
+
+volumes:
+  eforge_data:
+    # Docker manages this volume — data persists across restarts.
+    # Inspect with: docker volume inspect <project>_eforge_data

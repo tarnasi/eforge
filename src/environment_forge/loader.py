@@ -54,16 +54,21 @@ def _find_vault_dir() -> Path:
     Locate the vault directory by checking (in order):
 
     1. ``EFORGE_VAULT_PATH`` environment variable
-    2. ``/run/secrets/eforge`` (Docker secrets mount)
-    3. ``<cwd>/.eforge``
+    2. ``/eforge`` (Docker named volume)
+    3. ``/run/secrets/eforge`` (Docker secrets mount)
+    4. ``<cwd>/.eforge``
     """
     env_path = os.environ.get("EFORGE_VAULT_PATH", "").strip()
     if env_path:
         return Path(env_path)
 
-    docker_path = Path("/run/secrets/eforge")
-    if docker_path.is_dir():
-        return docker_path
+    docker_volume = Path(Vault.DOCKER_VOLUME_DIR)
+    if docker_volume.is_dir():
+        return docker_volume
+
+    docker_secrets = Path("/run/secrets/eforge")
+    if docker_secrets.is_dir():
+        return docker_secrets
 
     return Path.cwd() / ".eforge"
 

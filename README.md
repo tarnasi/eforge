@@ -1,7 +1,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/python-≥3.12-blue?style=for-the-badge&logo=python&logoColor=white" alt="Python versions">
   <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="License">
-  <img src="https://img.shields.io/badge/version-0.0.2-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.0.3-blue?style=for-the-badge" alt="Version">
 </p>
 
 <h1 align="center">🔐 Environment Forge</h1>
@@ -330,55 +330,104 @@ environment_forge.load()
 
 ## Docker
 
-### Mount the vault as a volume
+Environment Forge keeps your encrypted vault **outside the project directory**
+using a Docker named volume. Secrets never live inside the application image.
+
+### Quick start
 
 ```bash
-# Build your vault locally
-eforge init && eforge import .env
+# 1. Build your vault locally
+eforge init
+eforge import .env
 
-# Mount into container
-docker run -v $(pwd)/.eforge:/app/.eforge myapp
+# 2. Copy vault to Docker volume path
+eforge docker-init          # copies .eforge → /eforge (or --path /my/path)
 ```
 
-### Pass the secret via environment
-
-```bash
-docker run -e EFORGE_SECRET=$(cat .eforge/secret.key) myapp
-```
-
-### Docker Compose
+### Docker Compose (recommended)
 
 ```yaml
 services:
   app:
     build: .
     volumes:
-      - ./.eforge:/app/.eforge:ro
+      - eforge_data:/eforge        # persistent named volume
+    environment:
+      - EFORGE_VAULT_PATH=/eforge   # tell eforge where to look
+
+volumes:
+  eforge_data:                       # Docker manages this volume
 ```
 
-### In your Dockerfile
+The vault is stored on a **Docker named volume** — not in your source code, not
+baked into the image, and fully persistent across container restarts.
+
+### Dockerfile
 
 ```dockerfile
 FROM python:3.12-slim
-RUN pip install environment-forge
-COPY . /app
 WORKDIR /app
+RUN pip install environment-forge
+
+# Declare the volume mount point
+VOLUME /eforge
+
+COPY . .
 
 # Option 1: Shell injection
 CMD ["sh", "-c", "eval $(eforge inject) && python manage.py runserver"]
 
-# Option 2: Python injection (in your entrypoint)
+# Option 2: Python injection (recommended)
+# Just call environment_forge.load() in your settings/config
 CMD ["python", "manage.py", "runserver"]
-# Just add `import environment_forge; environment_forge.load()` to settings.py
+```
+
+### Pre-populating the volume
+
+```bash
+# From your dev machine — copy local vault into a running container's volume
+docker cp .eforge/vault.enc  mycontainer:/eforge/vault.enc
+docker cp .eforge/secret.key mycontainer:/eforge/secret.key
+
+# Or use eforge docker-init with --copy-from
+eforge docker-init --copy-from .eforge --path /eforge
+```
+
+### Using EFORGE_SECRET (no key file)
+
+If you prefer not to store `secret.key` on the volume, pass the secret
+via an environment variable:
+
+```yaml
+services:
+  app:
+    build: .
+    volumes:
+      - eforge_data:/eforge
+    environment:
+      - EFORGE_VAULT_PATH=/eforge
+      - EFORGE_SECRET=${EFORGE_SECRET}   # from .env or CI secrets
+
+volumes:
+  eforge_data:
+```
+
+```bash
+# Get your secret key value
+cat .eforge/secret.key
+
+# Pass it securely (e.g. from CI/CD secrets manager)
+docker run -e EFORGE_SECRET=<your-secret> -v eforge_data:/eforge myapp
 ```
 
 ### Auto-detection
 
 `environment_forge.load()` finds the vault automatically:
 
-1. `EFORGE_VAULT_PATH` env var → explicit path
-2. `/run/secrets/eforge` → Docker secrets mount
-3. `.eforge/` in current directory → local development
+1. `EFORGE_VAULT_PATH` env var → explicit override
+2. `/eforge` → Docker named volume mount
+3. `/run/secrets/eforge` → Docker secrets mount
+4. `.eforge/` in current directory → local development
 
 ---
 

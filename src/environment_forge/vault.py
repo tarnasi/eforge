@@ -33,8 +33,10 @@ class Vault:
     """
 
     DEFAULT_DIR = ".eforge"
+    DOCKER_VOLUME_DIR = "/eforge"
     VAULT_FILE = "vault.enc"
     KEY_FILE = "secret.key"
+    SCHEMA_FILE = "schema.json"
 
     def __init__(self, path: str | Path | None = None, secret: str | None = None):
         if path is None:
