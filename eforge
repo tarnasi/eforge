@@ -1,0 +1,6 @@
+#!/usr/bin/env python
+"""Convenience entry point: ``python eforge`` from project root."""
+from environment_forge.cli import main
+
+if __name__ == "__main__":
+    main()

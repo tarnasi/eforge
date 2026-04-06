@@ -1,0 +1,22 @@
+# ── Environment Forge ────────────────────────────────────────────────────
+# Example Dockerfile showing how to use eforge in a container.
+#
+# Build:   docker build -t myapp .
+# Run:     docker run -v ./config:/app/.eforge myapp
+
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Install environment-forge
+RUN pip install --no-cache-dir environment-forge
+
+# Copy your project
+COPY . .
+
+# Option 1: Mount vault as a volume (-v /host/.eforge:/app/.eforge)
+# Option 2: Pass secret as environment variable
+#   docker run -e EFORGE_SECRET=<your-secret> myapp
+
+# Inject vault into env, then start your app
+CMD ["sh", "-c", "eval $(eforge inject) && python your_app.py"]

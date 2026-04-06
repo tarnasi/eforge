@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "environment-forge"
+version = "0.1.0"
+description = "Encrypted environment variable manager — set, read, and validate secrets with Fernet encryption."
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Shahriyar Tarnasi"},
+]
+keywords = ["environment", "encryption", "secrets", "fernet", "dotenv", "config"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security :: Cryptography",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: System :: Systems Administration",
+]
+dependencies = [
+    "cryptography>=41.0",
+]
+
+[project.optional-dependencies]
+rich = [
+    "rich>=13.0",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "rich>=13.0",
+]
+
+[project.scripts]
+eforge = "environment_forge.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/shahriyartarnasi/environment-forge"
+Repository = "https://github.com/shahriyartarnasi/environment-forge"
+Issues = "https://github.com/shahriyartarnasi/environment-forge/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
