@@ -1,7 +1,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/python-≥3.12-blue?style=for-the-badge&logo=python&logoColor=white" alt="Python versions">
   <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="License">
-  <img src="https://img.shields.io/badge/version-0.0.1-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.0.2-blue?style=for-the-badge" alt="Version">
 </p>
 
 <h1 align="center">🔐 Environment Forge</h1>
@@ -496,8 +496,8 @@ environment-forge/
 ## Development
 
 ```bash
-git clone https://github.com/shahriyartarnasi/environment-forge.git
-cd environment-forge
+git clone https://github.com/tarnasi/eforge.git
+cd eforge
 make dev        # install with dev + rich deps
 make test       # run tests
 make build      # build for PyPI

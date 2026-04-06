@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "environment-forge"
-version = "0.0.1"
+version = "0.0.2"
 description = "Encrypted environment variable manager — set, read, and validate secrets with Fernet encryption."
 readme = "README.md"
 license = {text = "MIT"}
@@ -43,9 +43,9 @@ dev = [
 eforge = "environment_forge.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/shahriyartarnasi/environment-forge"
-Repository = "https://github.com/shahriyartarnasi/environment-forge"
-Issues = "https://github.com/shahriyartarnasi/environment-forge/issues"
+Homepage = "https://github.com/tarnasi/eforge"
+Repository = "https://github.com/tarnasi/eforge"
+Issues = "https://github.com/tarnasi/eforge/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
